@@ -1,0 +1,3 @@
+Subject: Spare-Parts Justification for Air Compressor 3 (COMPRESSOR-3)
+
+Air Compressor 3 (COMPRESSOR-3) shows a verified mean time between failures (MTBF) of 146.7 hours and a mean time to repair (MTTR) of 12.0 hours, yielding availability of only 92.4%. Verified downtime cost to date totals $43,200, drawn directly from the reliability database rather than estimated. This is the highest cost exposure and lowest availability among the assets reviewed, indicating repeated, costly failures on a critical compressed-air asset. We recommend approving procurement of spare parts to reduce repair time and downtime cost. Because total cost exceeds the $40,000 guardrail threshold, this request requires VP-tier approval rather than standard manager sign-off.

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__reliability-db__get_asset_metrics"
+    ]
+  }
+}
