@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reliability Ops Harness — Multi-Asset Escalation System</title>
+<style>
+  :root{
+    --bg:#12181C;
+    --panel:#1B2329;
+    --panel-2:#212B31;
+    --line:#2C3A40;
+    --text:#E7EDEC;
+    --muted:#8CA0A3;
+    --pass:#4FB286;
+    --fail:#E2711D;
+    --vp:#C24747;
+    --data:#6FB7C9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', Arial, sans-serif;
+    padding:32px 24px 90px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+  .tag{
+    font-family:'IBM Plex Mono','Courier New',monospace;
+    font-size:11px; letter-spacing:1.5px; color:var(--data);
+    text-transform:uppercase; border:1px solid var(--line);
+    display:inline-block; padding:3px 8px; border-radius:2px; margin-bottom:10px;
+  }
+  h1{
+    font-family:'IBM Plex Mono','Courier New',monospace;
+    font-size:26px; font-weight:600; margin:0 0 4px; letter-spacing:-0.3px;
+  }
+  .sub{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:720px;line-height:1.55;}
+  .sub a{color:var(--data);}
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:2px;
+    padding:20px 22px; margin-bottom:20px;
+  }
+  .panel h2{
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:13px;
+    letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+    margin:0 0 16px; padding-bottom:10px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .controls{display:flex; gap:24px; flex-wrap:wrap; margin-bottom:18px;}
+  .field{font-size:13px; color:var(--muted);}
+  .field label{display:block; margin-bottom:6px;}
+  input[type=number]{
+    width:110px; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--text); padding:7px 9px; border-radius:2px;
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:13px;
+  }
+  input[type=number]:focus{outline:2px solid var(--data); outline-offset:1px;}
+  button{
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:12px;
+    letter-spacing:0.5px; text-transform:uppercase; background:var(--panel-2);
+    color:var(--text); border:1px solid var(--line); padding:10px 16px;
+    border-radius:2px; cursor:pointer;
+  }
+  button:hover{border-color:var(--data);}
+  button.primary{background:var(--data); color:#0B1416; border-color:var(--data); font-weight:600;}
+  button.pass{background:var(--pass); color:#0B1416; border-color:var(--pass); font-weight:600;}
+  button.small{padding:6px 10px; font-size:11px;}
+  button:disabled{opacity:0.4; cursor:not-allowed;}
+
+  .asset-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .asset-card{
+    border:1px solid var(--line); border-radius:2px; padding:14px;
+    background:var(--panel-2); position:relative;
+  }
+  .asset-card .aid-row{display:flex; justify-content:space-between; align-items:flex-start;}
+  .asset-card .aid{
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:11px;
+    color:var(--data); letter-spacing:1px; text-transform:uppercase;
+  }
+  .asset-card .aname{font-size:15px; font-weight:600; margin:2px 0 10px;}
+  .remove-asset{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    width:22px; height:22px; padding:0; border-radius:2px; font-size:12px; line-height:1;
+  }
+  .remove-asset:hover{border-color:var(--vp); color:var(--vp);}
+  .dph-row{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); margin-bottom:10px;}
+  .dph-row input{width:80px;}
+  .fail-table{width:100%; font-size:11.5px; margin-bottom:8px; border-collapse:collapse;}
+  .fail-table th{
+    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:9.5px;
+    color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; padding:3px 4px;
+  }
+  .fail-table td{padding:3px 4px;}
+  .fail-table input{width:56px; padding:4px 5px; font-size:11.5px;}
+  .rm-row{background:none; border:none; color:var(--muted); cursor:pointer; padding:2px 5px; font-size:11px;}
+  .rm-row:hover{color:var(--vp);}
+  .add-row-btn{font-size:10.5px; padding:5px 8px; margin-bottom:10px;}
+  .asset-metrics{display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:12px; color:var(--muted); margin-top:6px;}
+  .asset-metrics b{color:var(--text); font-family:'IBM Plex Mono','Courier New',monospace;}
+  .asset-card .cost{
+    margin-top:10px; font-family:'IBM Plex Mono','Courier New',monospace;
+    font-size:18px; color:var(--data);
+  }
+  .status-chip{
+    position:absolute; top:12px; right:12px; font-size:10px; letter-spacing:0.5px;
+    padding:3px 8px; border-radius:2px; font-family:'IBM Plex Mono','Courier New',monospace;
+    text-transform:uppercase; border:1px solid var(--line); color:var(--muted);
+  }
+  .status-chip.skip{color:var(--muted); border-color:var(--line);}
+  .status-chip.manager{color:var(--pass); border-color:var(--pass);}
+  .status-chip.vp{color:var(--vp); border-color:var(--vp);}
+
+  .summary-table{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
+  .summary-table th{
+    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:10px;
+    letter-spacing:0.5px; color:var(--muted); text-transform:uppercase;
+    padding:8px 10px; border-bottom:1px solid var(--line);
+  }
+  .summary-table td{padding:9px 10px; border-bottom:1px solid #22292E; font-family:'IBM Plex Mono','Courier New',monospace;}
+  .pill{display:inline-block; padding:2px 8px; border-radius:2px; font-size:11px; letter-spacing:0.5px;}
+  .pill.skip{background:rgba(140,160,163,0.12); color:var(--muted);}
+  .pill.manager{background:rgba(79,178,134,0.12); color:var(--pass);}
+  .pill.vp{background:rgba(194,71,71,0.12); color:var(--vp);}
+
+  .memo-block{
+    border:1px solid var(--line); border-left:3px solid var(--data); border-radius:2px;
+    padding:16px 18px; margin-top:16px; background:var(--panel-2);
+  }
+  .memo-block.vp-tier{border-left-color:var(--vp);}
+  .memo-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .memo-head .aname{font-weight:600; font-size:14px;}
+  .memo-text{font-size:13.5px; line-height:1.6; white-space:pre-wrap; margin-bottom:12px;}
+  .ledger{border:1px solid var(--line); border-radius:2px; overflow:hidden; margin-bottom:12px;}
+  .ledger-row{display:grid; grid-template-columns:1.6fr 0.5fr; font-family:'IBM Plex Mono','Courier New',monospace; font-size:11.5px;}
+  .ledger-row div{padding:6px 10px; border-bottom:1px solid #22292E;}
+  .ledger-row.head div{color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-size:9.5px; border-bottom:1px solid var(--line);}
+  .stamp{font-weight:700;}
+  .stamp.pass{color:var(--pass);}
+  .approval-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .approval-row .status{
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:12px; color:var(--muted);
+  }
+  .approval-row .status.approved{color:var(--pass);}
+  .badge-tier{
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:11px; letter-spacing:0.5px;
+    padding:3px 9px; border-radius:2px; border:1px solid var(--line);
+  }
+  .badge-tier.manager{color:var(--pass); border-color:rgba(79,178,134,0.4); background:rgba(79,178,134,0.1);}
+  .badge-tier.vp{color:var(--vp); border-color:rgba(194,71,71,0.4); background:rgba(194,71,71,0.1);}
+
+  .note{font-size:12px; color:var(--muted); line-height:1.55;}
+  .iter-list{list-style:none; padding:0; margin:0; font-size:13px; line-height:1.6;}
+  .iter-list li{padding:10px 0; border-bottom:1px solid #22292E;}
+  .iter-list li:last-child{border-bottom:none;}
+  .iter-list b{color:var(--data);}
+  .empty-state{color:var(--muted); font-size:13px; padding:20px 0; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="tag">Reliability Ops Harness · Capstone (7A, Path A)</span>
+  <h1>Multi-Asset Escalation System</h1>
+  <p class="sub">
+    A reliability engineer reviews every asset in the database, decides which failures
+    are costly enough to escalate, and gets a spare-parts justification memo routed to
+    the right approval tier automatically. This page runs the deterministic parts —
+    the math, the escalation loop, and a template preview of the eval/guardrail — so
+    you can see the whole system shape at a glance. The real AI-drafted version, with
+    genuine tool use over a live MCP server, runs in Claude Code:
+    <a href="https://github.com/ohunsiboi/reliability-ops-harness" target="_blank">github.com/ohunsiboi/reliability-ops-harness</a>.
+  </p>
+
+  <!-- CONTROLS -->
+  <div class="panel">
+    <h2>01 · Thresholds</h2>
+    <div class="controls">
+      <div class="field">
+        <label>Escalation threshold (skip below this)</label>
+        <input type="number" id="escThreshold" value="15000" step="500">
+      </div>
+      <div class="field">
+        <label>Guardrail threshold (VP-tier above this)</label>
+        <input type="number" id="guardThreshold" value="40000" step="500">
+      </div>
+      <div class="field" style="align-self:flex-end;">
+        <button class="primary" id="runReview">Run Escalation Review</button>
+      </div>
+    </div>
+    <p class="note">Same thresholds used by the real workflow in <code>CLAUDE.md</code>: $15,000 to escalate, $40,000 to require VP-tier sign-off instead of manager sign-off.</p>
+  </div>
+
+  <!-- ASSET DASHBOARD -->
+  <div class="panel">
+    <h2>02 · Asset Database <button class="small" id="addAsset" style="text-transform:none;letter-spacing:0;">+ Add asset</button></h2>
+    <p class="note" style="margin-top:0;">Edit hourly cost or failure records directly below — every number recalculates live, and feeds the escalation review when you run it.</p>
+    <div class="asset-grid" id="assetGrid"></div>
+  </div>
+
+  <!-- REVIEW RESULTS -->
+  <div class="panel" id="resultsPanel">
+    <h2>03 · Escalation Review</h2>
+    <div id="resultsBody"><div class="empty-state">Click "Run Escalation Review" above to check every asset against the thresholds.</div></div>
+  </div>
+
+  <!-- ITERATIONS -->
+  <div class="panel">
+    <h2>04 · What Changed Since 6C</h2>
+    <ul class="iter-list">
+      <li><b>Iteration 1 — MCP server + real multi-asset data.</b> 6C read one hardcoded JSON file for one asset. This build queries a real SQLite database through a real MCP server exposing <code>list_assets</code>, <code>get_asset_metrics</code>, and <code>get_failure_log</code> — verified with a live JSON-RPC handshake before ever touching Claude Code.</li>
+      <li><b>Iteration 2 — an actual agent loop.</b> 6C was one asset in, one memo out. This build loops across every asset, checks its real cost, and branches — skip or escalate — the way you just saw above.</li>
+      <li><b>Iteration 3 — a deeper eval and a real guardrail.</b> 6C's eval checked two things. This one checks five, and feeds a guardrail that changes the approval tier itself once cost crosses $40,000 — manager sign-off vs. VP sign-off.</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+const ASSETS = [
+  { id:"PUMP-1",       name:"Feed Pump 1",       dph:850,  failures:[[420,3.5],[280,6],[510,2],[190,8.5]] },
+  { id:"CONVEYOR-2",   name:"Belt Conveyor 2",   dph:400,  failures:[[600,1],[720,1.5],[500,0.5]] },
+  { id:"COMPRESSOR-3", name:"Air Compressor 3",  dph:1200, failures:[[150,12],[200,9],[90,15]] },
+  { id:"CHILLER-4",    name:"Process Chiller 4", dph:600,  failures:[[300,4],[250,5]] },
+];
+
+function computeMetrics(failures, dollarsPerHour){
+  const n = failures.length;
+  if(n === 0) return { mtbf:null, mttr:null, availability:null, totalCost:null };
+  const totalRun = failures.reduce((s,f)=>s+f[0],0);
+  const totalRepair = failures.reduce((s,f)=>s+f[1],0);
+  const mtbf = totalRun / n;
+  const mttr = totalRepair / n;
+  const availability = mtbf / (mtbf + mttr);
+  const totalCost = totalRepair * dollarsPerHour;
+  return {
+    mtbf: Math.round(mtbf*10)/10,
+    mttr: Math.round(mttr*10)/10,
+    availability: Math.round(availability*1000)/10,
+    totalCost: Math.round(totalCost)
+  };
+}
+
+let assetCounter = 5; // next default id suffix for newly added assets
+
+function renderAssetGrid(){
+  const grid = document.getElementById('assetGrid');
+  grid.innerHTML = ASSETS.map((a, ai)=>{
+    const m = computeMetrics(a.failures, a.dph);
+    const rows = a.failures.map((f, fi)=>`
+      <tr>
+        <td><input type="number" class="runH" data-ai="${ai}" data-fi="${fi}" value="${f[0]}" step="10"></td>
+        <td><input type="number" class="repH" data-ai="${ai}" data-fi="${fi}" value="${f[1]}" step="0.5"></td>
+        <td><button class="rm-row" data-action="rm-row" data-ai="${ai}" data-fi="${fi}">✕</button></td>
+      </tr>`).join('');
+    return `
+      <div class="asset-card">
+        <div class="aid-row">
+          <div>
+            <div class="aid">${a.id}</div>
+            <div class="aname">${a.name}</div>
+          </div>
+          <button class="remove-asset" data-action="rm-asset" data-ai="${ai}" title="Remove asset">✕</button>
+        </div>
+        <div class="dph-row">
+          <label>$/hr downtime</label>
+          <input type="number" class="dph" data-ai="${ai}" value="${a.dph}" step="50">
+        </div>
+        <table class="fail-table">
+          <tr><th>Run hrs</th><th>Repair hrs</th><th></th></tr>
+          ${rows}
+        </table>
+        <button class="add-row-btn" data-action="add-row" data-ai="${ai}">+ Add failure</button>
+        <div class="asset-metrics">
+          <div>MTBF <b>${m.mtbf ?? '–'} hrs</b></div>
+          <div>MTTR <b>${m.mttr ?? '–'} hrs</b></div>
+          <div>Availability <b>${m.availability ?? '–'}${m.availability!==null?'%':''}</b></div>
+          <div>Failures <b>${a.failures.length}</b></div>
+        </div>
+        <div class="cost">${m.totalCost===null ? '–' : '$'+m.totalCost.toLocaleString()}</div>
+      </div>
+    `;
+  }).join('');
+}
+renderAssetGrid();
+
+// Event delegation: one set of listeners handles every card, including ones added later.
+document.getElementById('assetGrid').addEventListener('input', (e)=>{
+  const ai = e.target.dataset.ai;
+  if(ai === undefined) return;
+  const asset = ASSETS[ai];
+  if(e.target.classList.contains('dph')){
+    asset.dph = parseFloat(e.target.value) || 0;
+  } else if(e.target.classList.contains('runH')){
+    asset.failures[e.target.dataset.fi][0] = parseFloat(e.target.value) || 0;
+  } else if(e.target.classList.contains('repH')){
+    asset.failures[e.target.dataset.fi][1] = parseFloat(e.target.value) || 0;
+  }
+  renderAssetGrid();
+});
+
+document.getElementById('assetGrid').addEventListener('click', (e)=>{
+  const action = e.target.dataset.action;
+  if(!action) return;
+  const ai = e.target.dataset.ai;
+  if(action === 'add-row'){
+    ASSETS[ai].failures.push([100, 2]);
+  } else if(action === 'rm-row'){
+    ASSETS[ai].failures.splice(e.target.dataset.fi, 1);
+  } else if(action === 'rm-asset'){
+    ASSETS.splice(ai, 1);
+  }
+  renderAssetGrid();
+});
+
+document.getElementById('addAsset').onclick = ()=>{
+  const id = `ASSET-${assetCounter++}`;
+  ASSETS.push({ id, name: 'New Asset', dph: 500, failures: [[300, 3]] });
+  renderAssetGrid();
+};
+
+// Template phrasing mirrors real Claude Code output, captured from an actual run --
+// this page generates it deterministically for preview purposes.
+function memoTemplate(asset, m, tier, guardThreshold){
+  const tierLine = tier === 'VP'
+    ? `Because verified cost exceeds the $${guardThreshold.toLocaleString()} guardrail threshold, this request requires VP-tier approval.`
+    : `Given the verified cost impact of $${m.totalCost.toLocaleString()}, this request falls under the manager-tier approval path.`;
+  return `Subject: Spare-Parts Justification — ${asset.name} (${asset.id})
+
+${asset.name} (${asset.id}) has accumulated $${m.totalCost.toLocaleString()} in verified downtime cost, driven by a mean time between failures (MTBF) of ${m.mtbf} hours against a mean time to repair (MTTR) of ${m.mttr} hours, yielding availability of ${m.availability}%. We recommend approving procurement of spare parts to reduce repair time and limit further downtime cost. ${tierLine}`;
+}
+
+function rubricCheck(text, asset, m){
+  return {
+    mtbf_figure_present: text.includes(String(m.mtbf)),
+    cost_figure_present: text.includes(m.totalCost.toLocaleString()),
+    asset_identified: text.includes(asset.id) || text.includes(asset.name),
+    has_recommendation: /\b(request|recommend|approv|procure)\w*\b/i.test(text),
+    reasonable_length: text.split(/\s+/).length >= 40 && text.split(/\s+/).length <= 200
+  };
+}
+
+let reviewState = {}; // asset_id -> { decision, tier, approved }
+
+document.getElementById('runReview').onclick = ()=>{
+  const escThreshold = parseFloat(document.getElementById('escThreshold').value) || 0;
+  const guardThreshold = parseFloat(document.getElementById('guardThreshold').value) || 0;
+  reviewState = {};
+
+  const rows = [];
+  const memoBlocks = [];
+
+  ASSETS.forEach(a=>{
+    const m = computeMetrics(a.failures, a.dph);
+    if(m.totalCost === null){
+      reviewState[a.id] = { decision:'no-data' };
+      rows.push({ asset:a, m:{mtbf:'–',mttr:'–',availability:'–',totalCost:0}, decision:'no-data' });
+      return;
+    }
+    if(m.totalCost < escThreshold){
+      reviewState[a.id] = { decision:'skip', cost:m.totalCost };
+      rows.push({ asset:a, m, decision:'skip' });
+      return;
+    }
+    const tier = m.totalCost > guardThreshold ? 'VP' : 'MANAGER';
+    const text = memoTemplate(a, m, tier, guardThreshold);
+    const checks = rubricCheck(text, a, m);
+    const passed = Object.values(checks).every(Boolean);
+    reviewState[a.id] = { decision:'escalate', cost:m.totalCost, tier, approved:false };
+    rows.push({ asset:a, m, decision:'escalate', tier, passed });
+    memoBlocks.push({ asset:a, m, tier, text, checks, passed });
+  });
+
+  renderResults(rows, memoBlocks);
+};
+
+function renderResults(rows, memoBlocks){
+  const body = document.getElementById('resultsBody');
+
+  const tableRows = rows.map(r=>{
+    const pillClass = r.decision === 'skip' ? 'skip' : r.decision === 'no-data' ? 'skip' : (r.tier === 'VP' ? 'vp' : 'manager');
+    const pillLabel = r.decision === 'skip' ? 'SKIPPED' : r.decision === 'no-data' ? 'NO DATA' : (r.tier === 'VP' ? 'VP-TIER' : 'MANAGER');
+    const costLabel = r.decision === 'no-data' ? '–' : `$${r.m.totalCost.toLocaleString()}`;
+    const mtbfLabel = r.decision === 'no-data' ? '–' : `${r.m.mtbf} hrs`;
+    const mttrLabel = r.decision === 'no-data' ? '–' : `${r.m.mttr} hrs`;
+    const decisionLabel = r.decision === 'no-data' ? 'No failure records' : (r.decision === 'skip' ? 'Skipped (below threshold)' : 'Escalated');
+    return `<tr>
+      <td>${r.asset.id}</td>
+      <td>${mtbfLabel}</td>
+      <td>${mttrLabel}</td>
+      <td>${costLabel}</td>
+      <td>${decisionLabel}</td>
+      <td>${r.decision === 'escalate' ? (r.passed ? 'Passed (1st draft)' : 'Failed') : '—'}</td>
+      <td><span class="pill ${pillClass}">${pillLabel}</span></td>
+    </tr>`;
+  }).join('');
+
+  let html = `
+    <table class="summary-table">
+      <thead><tr><th>Asset</th><th>MTBF</th><th>MTTR</th><th>Total Cost</th><th>Decision</th><th>Rubric</th><th>Approval Tier</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  `;
+
+  memoBlocks.forEach(block=>{
+    html += renderMemoBlock(block);
+  });
+
+  body.innerHTML = html;
+
+  memoBlocks.forEach(block=>{
+    const btn = document.getElementById(`approve-${block.asset.id}`);
+    if(btn) btn.onclick = ()=> approveMemo(block.asset.id);
+  });
+}
+
+function renderMemoBlock(block){
+  const { asset, m, tier, text, checks, passed } = block;
+  const tierClass = tier === 'VP' ? 'vp-tier' : '';
+  const ledgerRows = Object.entries(checks).map(([k,v])=>
+    `<div class="ledger-row"><div>${k}</div><div class="stamp ${v?'pass':'fail'}">${v?'PASS':'FAIL'}</div></div>`
+  ).join('');
+
+  return `
+    <div class="memo-block ${tierClass}" id="memo-${asset.id}">
+      <div class="memo-head">
+        <span class="aname">${asset.name} (${asset.id})</span>
+        <span class="badge-tier ${tier==='VP'?'vp':'manager'}">${tier === 'VP' ? 'VP_APPROVAL_REQUIRED' : 'MANAGER_APPROVAL'}</span>
+      </div>
+      <div class="memo-text">${text}</div>
+      <div class="ledger">
+        <div class="ledger-row head"><div>Rubric check</div><div>Result</div></div>
+        ${ledgerRows}
+      </div>
+      <div class="approval-row">
+        <button class="small ${passed?'primary':''}" id="approve-${asset.id}" ${!passed?'disabled':''}>
+          Approve for ${tier === 'VP' ? 'VP-tier' : 'manager'} sign-off
+        </button>
+        <span class="status" id="status-${asset.id}">AWAITING APPROVAL</span>
+      </div>
+    </div>
+  `;
+}
+
+function approveMemo(assetId){
+  const statusEl = document.getElementById(`status-${assetId}`);
+  const btn = document.getElementById(`approve-${assetId}`);
+  statusEl.textContent = '✅ APPROVED';
+  statusEl.classList.add('approved');
+  btn.textContent = 'Approved';
+  btn.classList.remove('primary');
+  btn.classList.add('pass');
+  btn.disabled = true;
+  if(reviewState[assetId]) reviewState[assetId].approved = true;
+}
+</script>
+</body>
+</html>
