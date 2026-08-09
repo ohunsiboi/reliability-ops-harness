@@ -59,9 +59,9 @@
     padding:20px 22px; margin-bottom:20px;
   }
   .panel h2{
-    font-family:'IBM Plex Mono','Courier New',monospace; font-size:15px;
-    letter-spacing:1px; text-transform:uppercase; color:var(--text); font-weight:700;
-    margin:0 0 16px; padding-bottom:12px; border-bottom:2px solid var(--line);
+    font-family:'IBM Plex Mono','Courier New',monospace; font-size:18px;
+    letter-spacing:1.5px; text-transform:uppercase; color:#FFFFFF; font-weight:800;
+    margin:0 0 18px; padding-bottom:13px; border-bottom:2px solid var(--data);
     display:flex; justify-content:space-between; align-items:center; gap:10px;
   }
   .h-num{
@@ -104,7 +104,7 @@
     font-family:'IBM Plex Mono','Courier New',monospace; font-size:11px;
     color:var(--data); letter-spacing:1px; text-transform:uppercase;
   }
-  .asset-card .aname{font-size:17px; font-weight:800; margin:2px 0 12px; letter-spacing:-0.2px;}
+  .asset-card .aname{font-size:17px; font-weight:800; margin:2px 0 12px; letter-spacing:-0.2px; color:#FFFFFF;}
   .remove-asset{
     background:none; border:1px solid var(--line); color:var(--muted);
     width:22px; height:22px; padding:0; border-radius:2px; font-size:12px; line-height:1;
@@ -114,8 +114,8 @@
   .dph-row input{width:80px;}
   .fail-table{width:100%; font-size:11.5px; margin-bottom:8px; border-collapse:collapse;}
   .fail-table th{
-    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:9.5px;
-    color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; padding:3px 4px;
+    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:10px;
+    color:var(--data); text-transform:uppercase; letter-spacing:1px; padding:3px 4px; font-weight:700;
   }
   .fail-table td{padding:3px 4px;}
   .fail-table input{width:56px; padding:4px 5px; font-size:11.5px;}
@@ -128,11 +128,11 @@
     border:1px solid var(--line); border-top:2.5px solid var(--stat-color, var(--data));
     border-radius:2px; padding:8px 10px; background:#181F24;
   }
-  .stat-box .sl{font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono','Courier New',monospace;}
+  .stat-box .sl{font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#B8C5C8; font-family:'IBM Plex Mono','Courier New',monospace;}
   .stat-box .sv{font-family:'IBM Plex Mono','Courier New',monospace; font-size:18px; font-weight:800; color:var(--text); margin-top:2px;}
   .stat-box .sv small{font-size:11px; font-weight:600; color:var(--muted); margin-left:2px;}
   .avail-row{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);}
-  .avail-row .al{font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono','Courier New',monospace; margin-bottom:5px;}
+  .avail-row .al{font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#B8C5C8; font-family:'IBM Plex Mono','Courier New',monospace; margin-bottom:5px;}
   .avail-track{position:relative; height:6px; border-radius:3px; background:#0E1417; overflow:hidden;}
   .avail-fill{height:100%; background:linear-gradient(90deg, var(--vp), var(--amber), var(--healthy));}
   .avail-pct{font-family:'IBM Plex Mono','Courier New',monospace; font-size:13px; font-weight:800; color:var(--text); margin-top:5px; text-align:right;}
@@ -151,9 +151,9 @@
 
   .summary-table{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
   .summary-table th{
-    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:10px;
-    letter-spacing:0.5px; color:var(--muted); text-transform:uppercase;
-    padding:8px 10px; border-bottom:1px solid var(--line);
+    text-align:left; font-family:'IBM Plex Mono','Courier New',monospace; font-size:11px;
+    letter-spacing:1px; color:var(--data); text-transform:uppercase; font-weight:700;
+    padding:9px 10px; border-bottom:2px solid var(--line);
   }
   .summary-table td{padding:11px 10px; border-bottom:1px solid #22292E; font-family:'IBM Plex Mono','Courier New',monospace; font-weight:600; font-size:13.5px;}
   .pill{display:inline-block; padding:2px 8px; border-radius:2px; font-size:11px; letter-spacing:0.5px;}
@@ -167,7 +167,7 @@
   }
   .memo-block.vp-tier{border-left-color:var(--vp);}
   .memo-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
-  .memo-head .aname{font-weight:600; font-size:14px;}
+  .memo-head .aname{font-weight:800; font-size:17px; color:#FFFFFF;}
   .memo-text{font-size:13.5px; line-height:1.6; white-space:pre-wrap; margin-bottom:12px;}
   .ledger{border:1px solid var(--line); border-radius:2px; overflow:hidden; margin-bottom:12px;}
   .ledger-row{display:grid; grid-template-columns:1.6fr 0.5fr; font-family:'IBM Plex Mono','Courier New',monospace; font-size:11.5px;}
@@ -327,7 +327,7 @@ function renderAssetGrid(){
           </div>
           <div class="stat-box" style="--stat-color:var(--vp);">
             <div class="sl">Downtime cost</div>
-            <div class="sv" style="color:var(--data);">${m.totalCost===null ? '–' : '$'+m.totalCost.toLocaleString()}</div>
+            <div class="sv">${m.totalCost===null ? '–' : '$'+m.totalCost.toLocaleString()}</div>
           </div>
         </div>
         <div class="avail-row">
