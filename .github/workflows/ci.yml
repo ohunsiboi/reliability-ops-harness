@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile-check Python sources
+        run: python -m py_compile eval_check.py metrics_lib.py setup_db.py view_db.py mcp_server.py
+
+      - name: Build reliability database
+        run: python setup_db.py
+
+      - name: Run rubric eval on committed memos
+        run: |
+          python eval_check.py draft_memo_PUMP-1.txt truth_PUMP-1.json
+          python eval_check.py draft_memo_COMPRESSOR-3.txt truth_COMPRESSOR-3.json
