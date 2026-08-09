@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "mcp__reliability-db__get_asset_metrics"
+      "mcp__reliability-db__get_asset_metrics",
+      "Bash(python3 eval_check.py draft_memo_PUMP-1.txt truth_PUMP-1.json)",
+      "Bash(python eval_check.py draft_memo_PUMP-1.txt truth_PUMP-1.json)",
+      "Bash(python eval_check.py draft_memo_COMPRESSOR-3.txt truth_COMPRESSOR-3.json)",
+      "Bash(git add *)"
     ]
   }
 }
