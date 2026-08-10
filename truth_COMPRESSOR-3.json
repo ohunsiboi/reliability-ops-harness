@@ -1,1 +1,8 @@
-{"mtbf": 146.7, "mttr": 12.0, "availability": 92.4, "totalCost": 43200, "asset_id": "COMPRESSOR-3", "name": "Air Compressor 3"}
+{
+  "mtbf": 146.7,
+  "mttr": 12.0,
+  "availability": 92.4,
+  "totalCost": 43200,
+  "asset_id": "COMPRESSOR-3",
+  "name": "Air Compressor 3"
+}
